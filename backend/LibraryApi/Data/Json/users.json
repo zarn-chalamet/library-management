@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@library.com",
+    "passwordHash": "$2a$11$WI7xWS0l9GeS8YLNk8PMJ.FGL/v/k.iSDVRm4027Y5p77B3r9p846",
+    "role": "Admin",
+    "createdAt": "2026-10-02T18:46:16.0799451"
+  },
+  {
+    "id": 2,
+    "username": "user1",
+    "email": "user@gmail.com",
+    "passwordHash": "$2a$11$.QvFe2V5.fW/aC63fkwYU.yOzPm6tLfcz60NSdGZ0jLbGwFVwqZCe",
+    "role": "User",
+    "createdAt": "2026-10-02T19:02:59.7416894"
+  }
+]
