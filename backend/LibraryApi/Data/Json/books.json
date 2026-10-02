@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "title": "Clean Code (2nd Printing)",
+    "author": "Robert C. Martin",
+    "isbn": "9780132350884",
+    "genre": "Programming",
+    "publicationYear": 2008,
+    "totalCopies": 6,
+    "availableCopies": 0,
+    "isAvailable": false
+  },
+  {
+    "id": 2,
+    "title": "The Pragmatic Programmer",
+    "author": "Andrew Hunt",
+    "isbn": "9780135957059",
+    "genre": "Programming",
+    "publicationYear": 2019,
+    "totalCopies": 3,
+    "availableCopies": 2,
+    "isAvailable": true
+  },
+  {
+    "id": 3,
+    "title": "1984",
+    "author": "George Orwell",
+    "isbn": "9780451524935",
+    "genre": "Fiction",
+    "publicationYear": 1949,
+    "totalCopies": 4,
+    "availableCopies": 4,
+    "isAvailable": true
+  },
+  {
+    "id": 4,
+    "title": "Sapiens: A Brief History of Humankind",
+    "author": "Yuval Noah Harari",
+    "isbn": "9780062316097",
+    "genre": "History",
+    "publicationYear": 2015,
+    "totalCopies": 2,
+    "availableCopies": 0,
+    "isAvailable": false
+  },
+  {
+    "id": 8,
+    "title": "Refactoring",
+    "author": "Martin Fowler",
+    "isbn": "9780134757599",
+    "genre": "Programming",
+    "publicationYear": 2018,
+    "totalCopies": 2,
+    "availableCopies": 2,
+    "isAvailable": true
+  }
+]

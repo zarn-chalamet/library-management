@@ -41,6 +41,16 @@ public class JsonDatabase
                 PasswordHash TEXT NOT NULL,
                 Role TEXT NOT NULL,
                 CreatedAt TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS Books (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Title TEXT NOT NULL,
+                Author TEXT NOT NULL,
+                ISBN TEXT NOT NULL UNIQUE,
+                Genre TEXT NOT NULL,
+                PublicationYear INTEGER NOT NULL,
+                TotalCopies INTEGER NOT NULL,
+                AvailableCopies INTEGER NOT NULL
             );");
 
         var users = Load<User>("users.json");
@@ -56,12 +66,16 @@ public class JsonDatabase
                 Role = "Admin"
             });
         }
+        var books = Load<Book>("books.json");
 
         _keepAlive.Execute(
             @"INSERT INTO Users (Id, Username, Email, PasswordHash, Role, CreatedAt)
               VALUES (@Id, @Username, @Email, @PasswordHash, @Role, @CreatedAt);", users);
+        _keepAlive.Execute(
+            @"INSERT INTO Books (Id, Title, Author, ISBN, Genre, PublicationYear, TotalCopies, AvailableCopies)
+              VALUES (@Id, @Title, @Author, @ISBN, @Genre, @PublicationYear, @TotalCopies, @AvailableCopies);", books);
 
-        SaveAsync().GetAwaiter().GetResult(); // writes users.json if it was just seeded
+        SaveAsync().GetAwaiter().GetResult();
     }
 
     // Call this after every create / update / delete
@@ -72,9 +86,9 @@ public class JsonDatabase
         {
             using var conn = new SqliteConnection(_connectionString);
             var users = await conn.QueryAsync<User>("SELECT * FROM Users;");
-            await File.WriteAllTextAsync(
-                Path.Combine(_dataPath, "users.json"),
-                JsonSerializer.Serialize(users, JsonOpts));
+            var books = await conn.QueryAsync<Book>("SELECT * FROM Books;");
+            await File.WriteAllTextAsync(Path.Combine(_dataPath, "users.json"), JsonSerializer.Serialize(users, JsonOpts));
+            await File.WriteAllTextAsync(Path.Combine(_dataPath, "books.json"), JsonSerializer.Serialize(books, JsonOpts));
         }
         finally
         {
