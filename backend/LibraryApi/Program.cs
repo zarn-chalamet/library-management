@@ -16,6 +16,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddSingleton<JsonDatabase>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Global error handling
