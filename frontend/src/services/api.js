@@ -47,6 +47,10 @@ export const authApi = {
     const response = await apiClient.post('/auth/login', credentials);
     return response.data;
   },
+  register: async (data) => {
+    const response = await apiClient.post('/auth/register', data);
+    return response.data;
+  },
 };
 
 export const bookApi = {
