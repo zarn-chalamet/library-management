@@ -9,10 +9,10 @@
   },
   {
     "id": 2,
-    "username": "user1",
-    "email": "user@gmail.com",
-    "passwordHash": "$2a$11$.QvFe2V5.fW/aC63fkwYU.yOzPm6tLfcz60NSdGZ0jLbGwFVwqZCe",
+    "username": "John Doe",
+    "email": "johndoe@gmail.com",
+    "passwordHash": "$2a$11$8idqyvqNugo.hCUlYr/8iO3tCIyK6Bewkg0lcojvi6a7CcL4SCm3W",
     "role": "User",
-    "createdAt": "2026-10-02T19:02:59.7416894"
+    "createdAt": "2026-10-03T17:23:45.1933748"
   }
 ]
