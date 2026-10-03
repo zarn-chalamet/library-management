@@ -42,6 +42,8 @@ export default function Dashboard() {
     });
   }, [books, search, activeGenre]);
 
+  const isFiltered = search.trim() !== '' || activeGenre !== 'all';
+
   // fetch and show the latest copy of the book
   async function handleView(book) {
     try {
@@ -147,7 +149,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {!loading && !error && <StatsCards books={books} />}
+        {!loading && !error && <StatsCards books={filtered} isFiltered={isFiltered} />}
 
         <Toolbar
           search={search}
