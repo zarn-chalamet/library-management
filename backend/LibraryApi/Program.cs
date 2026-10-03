@@ -9,6 +9,12 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Fail fast if the JWT secret was not provided
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
+    throw new InvalidOperationException(
+        "Jwt:Secret is missing or too short (min 32 chars). Run: dotnet user-secrets set \"Jwt:Secret\" \"<32+ char string>\"");
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
@@ -24,6 +30,18 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// CORS: allowed frontend origins come from config (Cors:Origins)
+builder.Services.AddCors(options =>
+{
+    var origins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+                  ?? Array.Empty<string>();
+
+    options.AddDefaultPolicy(policy => policy
+        .WithOrigins(origins)
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
 // JWT validation
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -37,8 +55,7 @@ builder.Services
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             RoleClaimType = ClaimTypes.Role
         };
     });
@@ -49,6 +66,8 @@ var app = builder.Build();
 // Create tables and load the JSON files
 app.Services.GetRequiredService<JsonDatabase>().Initialize();
 
+// CORS first, so error responses (401, 409...) still carry CORS headers
+app.UseCors();
 app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
