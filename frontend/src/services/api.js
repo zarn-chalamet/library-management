@@ -31,10 +31,15 @@ apiClient.interceptors.response.use(
 
 // Works for our { message } errors and for ASP.NET validation errors
 export function getErrorMessage(error) {
-  const data = error.response?.data;
+  // network error, CORS block or API down
+  if (!error.response) return 'Cannot reach the server. Is the API running?';
+
+  const { status, data } = error.response;
   if (data?.message) return data.message;
   if (data?.errors) return Object.values(data.errors).flat()[0];
-  return 'Something went wrong. Is the API running?';
+  if (status === 403) return "You don't have permission to do that.";
+  if (status === 401) return 'Your session has expired. Please log in again.';
+  return 'Something went wrong. Please try again.';
 }
 
 export const authApi = {
@@ -47,6 +52,10 @@ export const authApi = {
 export const bookApi = {
   getAll: async () => {
     const response = await apiClient.get('/books');
+    return response.data;
+  },
+  getById: async (id) => {
+    const response = await apiClient.get(`/books/${id}`);
     return response.data;
   },
   create: async (bookData) => {
