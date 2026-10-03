@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { getErrorMessage } from '../services/api';
+import { BookOpen } from 'lucide-react';
 
 const ENV_NAME = import.meta.env.VITE_ENV_NAME;
 const isProduction = ENV_NAME === 'Production';
@@ -39,10 +40,9 @@ export default function Login() {
       <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white px-8 pb-8 pt-10 shadow-xl shadow-slate-900/5">
         <div className="text-center">
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-600 text-white">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
+            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-600 text-white">
+              <BookOpen size={28} />
+            </div>
           </div>
 
           <h1 className="text-2xl font-bold text-slate-900">Library System</h1>
