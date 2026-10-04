@@ -17,21 +17,49 @@ public class BookDto
 
 public class CreateBookDto
 {
-    [Required] public string Title { get; set; } = string.Empty;
-    [Required] public string Author { get; set; } = string.Empty;
-    [Required] public string ISBN { get; set; } = string.Empty;
-    [Required] public string Genre { get; set; } = string.Empty;
-    [Range(1000, 2100)] public int PublicationYear { get; set; }
-    [Range(0, 10000)] public int TotalCopies { get; set; }
+    [Required, StringLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required, StringLength(150)]
+    public string Author { get; set; } = string.Empty;
+
+    [Required]
+    [RegularExpression(@"^(\d{9}[\dXx]|\d{13})$",
+        ErrorMessage = "ISBN must be 10 or 13 characters (digits only; an ISBN-10 may end in X).")]
+    public string ISBN { get; set; } = string.Empty;
+
+    [Required, StringLength(50)]
+    public string Genre { get; set; } = string.Empty;
+
+    [Range(1000, 2100)]
+    public int PublicationYear { get; set; }
+
+    [Range(0, 10000)]
+    public int TotalCopies { get; set; }
 }
 
 public class UpdateBookDto
 {
-    [Required] public string Title { get; set; } = string.Empty;
-    [Required] public string Author { get; set; } = string.Empty;
-    [Required] public string ISBN { get; set; } = string.Empty;
-    [Required] public string Genre { get; set; } = string.Empty;
-    [Range(1000, 2100)] public int PublicationYear { get; set; }
-    [Range(0, 10000)] public int TotalCopies { get; set; }
-    [Range(0, 10000)] public int AvailableCopies { get; set; }
+    [Required, StringLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required, StringLength(150)]
+    public string Author { get; set; } = string.Empty;
+
+    [Required]
+    [RegularExpression(@"^(\d{9}[\dXx]|\d{13})$",
+        ErrorMessage = "ISBN must be 10 or 13 characters (digits only; an ISBN-10 may end in X).")]
+    public string ISBN { get; set; } = string.Empty;
+
+    [Required, StringLength(50)]
+    public string Genre { get; set; } = string.Empty;
+
+    [Range(1000, 2100)]
+    public int PublicationYear { get; set; }
+
+    [Range(0, 10000)]
+    public int TotalCopies { get; set; }
+
+    [Range(0, 10000)]
+    public int AvailableCopies { get; set; }
 }

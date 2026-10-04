@@ -38,7 +38,7 @@ public class BookService : IBookService
 
     public async Task<BookDto> CreateAsync(CreateBookDto dto)
     {
-        var isbn = dto.ISBN.Trim();
+        var isbn = dto.ISBN.Trim().ToUpperInvariant();
         if (await _books.ExistsByIsbnAsync(isbn))
             throw new ConflictException("A book with this ISBN already exists");
 
@@ -66,7 +66,7 @@ public class BookService : IBookService
         if (dto.AvailableCopies > dto.TotalCopies)
             throw new BadRequestException("AvailableCopies cannot exceed TotalCopies");
 
-        var isbn = dto.ISBN.Trim();
+        var isbn = dto.ISBN.Trim().ToUpperInvariant();
         if (await _books.ExistsByIsbnAsync(isbn, excludeId: id))
             throw new ConflictException("A book with this ISBN already exists");
 
