@@ -1,17 +1,30 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { getErrorMessage } from '../services/api';
 import { useEscape } from '../hooks/useEscape';
+import { validateBook } from '../utils/validation';
 
-const inputClass =
-  'w-full rounded-lg border border-slate-300 px-3 py-2.5 font-normal text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15';
+function inputClass(hasError) {
+  return `w-full rounded-lg border px-3 py-2.5 font-normal text-slate-900 outline-none transition focus:ring-4 ${
+    hasError
+      ? 'border-red-400 focus:border-red-500 focus:ring-red-500/15'
+      : 'border-slate-300 focus:border-indigo-500 focus:ring-indigo-500/15'
+  }`;
+}
 
-function Field({ label, className = '', children }) {
+function Field({ id, label, error, className = '', children }) {
   return (
-    <label className={`flex flex-col gap-1.5 text-sm font-semibold text-slate-700 ${className}`}>
-      {label}
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      <label htmlFor={id} className="text-sm font-semibold text-slate-700">
+        {label}
+      </label>
       {children}
-    </label>
+      {error && (
+        <p id={`${id}-error`} className="text-xs font-medium text-red-600">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -38,27 +51,15 @@ function toForm(book) {
   };
 }
 
-// Mirrors the backend rules so the user gets instant feedback
-function validate(form, isEdit) {
-  const year = Number(form.publicationYear);
-  const total = Number(form.totalCopies);
-  const available = Number(form.availableCopies);
-
-  if (!Number.isInteger(year) || year < 1000 || year > 2100) {
-    return 'Publication year must be between 1000 and 2100.';
-  }
-  if (!Number.isInteger(total) || total < 0) {
-    return 'Total copies must be 0 or more.';
-  }
-  if (isEdit && (!Number.isInteger(available) || available < 0 || available > total)) {
-    return 'Available copies must be between 0 and total copies.';
-  }
-  return '';
-}
+// Keep only digits and X, uppercase, max 13 characters (hyphens and spaces are dropped)
+const cleanIsbn = (value) => value.replace(/[^0-9Xx]/g, '').toUpperCase().slice(0, 13);
 
 export default function BookFormModal({ book, genres, onSubmit, onClose }) {
   const isEdit = Boolean(book);
-  const [form, setForm] = useState(() => toForm(book));
+  const initial = useMemo(() => toForm(book), [book]);
+
+  const [form, setForm] = useState(initial);
+  const [touched, setTouched] = useState({});
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -66,26 +67,45 @@ export default function BookFormModal({ book, genres, onSubmit, onClose }) {
     if (!submitting) onClose();
   });
 
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const errors = validateBook(form, isEdit);
+  const isValid = Object.keys(errors).length === 0;
+  // When editing, saving makes no sense until something has changed
+  const isDirty = Object.keys(initial).some((key) => initial[key] !== form[key]);
+  const canSubmit = isValid && (!isEdit || isDirty) && !submitting;
+
+  // An error only shows after the user has left the field
+  const fieldError = (name) => (touched[name] ? errors[name] : '');
+
+  const set = (name, transform) => (e) => {
+    const value = transform ? transform(e.target.value) : e.target.value;
+    setForm((f) => ({ ...f, [name]: value }));
+    setError(''); // clear the server error as soon as the user edits
+  };
+  const blur = (name) => () => setTouched((t) => ({ ...t, [name]: true }));
+
+  function fieldProps(name) {
+    return {
+      id: name,
+      onBlur: blur(name),
+      'aria-invalid': Boolean(fieldError(name)),
+      'aria-describedby': `${name}-error`,
+      className: inputClass(fieldError(name)),
+    };
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
-
-    const problem = validate(form, isEdit);
-    if (problem) {
-      setError(problem);
-      return;
-    }
+    if (!canSubmit) return;
 
     const payload = {
       title: form.title.trim(),
       author: form.author.trim(),
-      isbn: form.isbn.trim(),
+      isbn: form.isbn,
       genre: form.genre.trim(),
       publicationYear: Number(form.publicationYear),
       totalCopies: Number(form.totalCopies),
     };
-    // new book starts with every copy available (the API sets this), so only edits send it
+    // A new book starts with every copy available (the API sets this), so only edits send it
     if (isEdit) payload.availableCopies = Number(form.availableCopies);
 
     setError('');
@@ -126,7 +146,7 @@ export default function BookFormModal({ book, genres, onSubmit, onClose }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 px-6 py-5 sm:grid-cols-2">
+        <form onSubmit={handleSubmit} noValidate className="grid gap-4 px-6 py-5 sm:grid-cols-2">
           {error && (
             <div
               role="alert"
@@ -136,20 +156,27 @@ export default function BookFormModal({ book, genres, onSubmit, onClose }) {
             </div>
           )}
 
-          <Field label="Title" className="sm:col-span-2">
-            <input className={inputClass} value={form.title} onChange={set('title')} required autoFocus />
+          <Field id="title" label="Title" error={fieldError('title')} className="sm:col-span-2">
+            <input {...fieldProps('title')} value={form.title} onChange={set('title')} autoFocus />
           </Field>
 
-          <Field label="Author">
-            <input className={inputClass} value={form.author} onChange={set('author')} required />
+          <Field id="author" label="Author" error={fieldError('author')}>
+            <input {...fieldProps('author')} value={form.author} onChange={set('author')} />
           </Field>
 
-          <Field label="ISBN">
-            <input className={inputClass} value={form.isbn} onChange={set('isbn')} required />
+          <Field id="isbn" label="ISBN" error={fieldError('isbn')}>
+            <input
+              {...fieldProps('isbn')}
+              value={form.isbn}
+              onChange={set('isbn', cleanIsbn)}
+              inputMode="numeric"
+              placeholder="10 or 13 digits"
+              maxLength={13}
+            />
           </Field>
 
-          <Field label="Genre">
-            <input className={inputClass} value={form.genre} onChange={set('genre')} list="genre-options" required />
+          <Field id="genre" label="Genre" error={fieldError('genre')}>
+            <input {...fieldProps('genre')} value={form.genre} onChange={set('genre')} list="genre-options" />
             <datalist id="genre-options">
               {genres.map((g) => (
                 <option key={g} value={g} />
@@ -157,36 +184,33 @@ export default function BookFormModal({ book, genres, onSubmit, onClose }) {
             </datalist>
           </Field>
 
-          <Field label="Publication year">
+          <Field id="publicationYear" label="Publication year" error={fieldError('publicationYear')}>
             <input
+              {...fieldProps('publicationYear')}
               type="number"
-              className={inputClass}
               value={form.publicationYear}
               onChange={set('publicationYear')}
-              required
             />
           </Field>
 
-          <Field label="Total copies">
+          <Field id="totalCopies" label="Total copies" error={fieldError('totalCopies')}>
             <input
+              {...fieldProps('totalCopies')}
               type="number"
               min="0"
-              className={inputClass}
               value={form.totalCopies}
               onChange={set('totalCopies')}
-              required
             />
           </Field>
 
           {isEdit && (
-            <Field label="Available copies">
+            <Field id="availableCopies" label="Available copies" error={fieldError('availableCopies')}>
               <input
+                {...fieldProps('availableCopies')}
                 type="number"
                 min="0"
-                className={inputClass}
                 value={form.availableCopies}
                 onChange={set('availableCopies')}
-                required
               />
             </Field>
           )}
@@ -202,7 +226,7 @@ export default function BookFormModal({ book, genres, onSubmit, onClose }) {
             </button>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={!canSubmit}
               className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? 'Saving...' : isEdit ? 'Save changes' : 'Add book'}
