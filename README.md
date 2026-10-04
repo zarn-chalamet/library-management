@@ -112,7 +112,8 @@ Errors use the shape `{ "message": "..." }`. Send the token as `Authorization: B
 ## Business rules
 
 - Registration password: at least 8 characters, with a number and a special character
-- ISBN is unique
+- ISBN must be 10 or 13 characters (digits only; an ISBN-10 may end in X)
+- Title max 200, author max 150, genre max 50 characters; year between 1000 and 2100
 - A new book starts with `availableCopies = totalCopies`
 - `availableCopies` can never exceed `totalCopies`
 
